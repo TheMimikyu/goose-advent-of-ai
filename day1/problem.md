@@ -86,6 +86,6 @@ This project is organized as follows:
     │   ├── intermediate.md   (Bash script explanation)
     │   └── advanced.md       (YAML workflow explanation)
     ├── /scripts
-    │   └── fortune.sh        (Actual script)
+    │   └── fortune.ps1       (Actual script)
     └── /outputs
         └── fortune_log.txt   (Saved outputs)
