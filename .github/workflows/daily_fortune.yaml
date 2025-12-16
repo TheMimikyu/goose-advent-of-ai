@@ -1,0 +1,79 @@
+name: ⛄ Daily Winter Fortune
+
+on:
+  schedule:
+    # Runs at 08:00 UTC every day
+    - cron: '0 0 * * *'
+  workflow_dispatch: # Allows manual triggering for testing
+
+permissions:
+  contents: read
+  discussions: write
+
+env:
+  # Configure your provider here (e.g., openrouter, openai, anthropic)
+  GOOSE_PROVIDER: openrouter
+  GOOSE_MODEL: anthropic/claude-4.5-sonnet
+  GOOSE_API_KEY: ${{ secrets.GOOSE_API_KEY }}
+  GH_TOKEN: ${{ github.token }}
+
+jobs:
+  forecast:
+    name: Generate Winter Prophecy
+    runs-on: ubuntu-latest
+    if: ${{ github.event_name == 'workflow_dispatch' ||  date +%-m == 12 }} # Logic check for December (optional)
+
+    steps:
+      - name: Checkout Repo
+        uses: actions/checkout@v4
+
+      - name: Install Goose CLI
+        run: |
+          mkdir -p $HOME/.local/bin
+          curl -fsSL [https://github.com/block/goose/releases/download/stable/download_cli.sh](https://github.com/block/goose/releases/download/stable/download_cli.sh) | CONFIGURE=false GOOSE_BIN_DIR=$HOME/.local/bin bash
+          echo "$HOME/.local/bin" >> $GITHUB_PATH
+
+      - name: Configure Goose
+        run: |
+          mkdir -p ~/.config/goose
+          # We manually write the config to inject the API Key from secrets
+          cat <<EOF > ~/.config/goose/config.yaml
+          GOOSE_PROVIDER: $GOOSE_PROVIDER
+          GOOSE_MODEL: $GOOSE_MODEL
+          keyring: false
+          EOF
+
+      - name: Generate Fortune
+        id: fortune
+        run: |
+          # 1. Randomize Moods and Themes
+          MOODS=("Grumpy" "Festive" "Mysterious" "Sarcastic" "Poetic" "Dramatic")
+          THEMES=("Spooky" "Romantic" "Adventurous" "Magical" "Cyberpunk" "Cozy")
+          
+          # Pick random index
+          RAND_MOOD=${MOODS[$RANDOM % ${#MOODS[@]}]}
+          RAND_THEME=${THEMES[$RANDOM % ${#THEMES[@]}]}
+          
+          echo "Selected: $RAND_MOOD | $RAND_THEME"
+
+          # 2. Build Prompt
+          PROMPT="Context: You are Madame Zelda's AI. Task: Generate a winter fortune. \
+          Personality: $RAND_MOOD. Theme: $RAND_THEME. \
+          Requirements: Use ASCII art borders. Include a central ASCII icon. Use emojis."
+
+          # 3. Run Goose and save to file
+          echo "🔮 Gazing into the crystal ball..."
+          goose run --text "$PROMPT" -q > final_post.md
+
+          # Debug: Print to console to verify
+          cat final_post.md
+          echo -e "\n\`\`\`" >> final_post.md
+
+      - name: Post to Discussions
+        run: |
+          # Create a new discussion in the "General" category
+          # Adjust --category if your repo uses different names
+          gh discussion create \
+            --category "General" \
+            --title "🔮 Madame Zelda's Fortune: $(date +'%A, %b %d')" \
+            --body-file final_post.md
