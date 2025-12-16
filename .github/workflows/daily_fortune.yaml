@@ -8,7 +8,7 @@ on:
 
 permissions:
   contents: read
-  discussions: write
+  issues: write
 
 env:
   # Configure your provider here (e.g., openrouter, openai, anthropic)
@@ -68,11 +68,8 @@ jobs:
           cat final_post.md
           echo -e "\n\`\`\`" >> final_post.md
 
-      - name: Post to Discussions
+      - name: Post to Issue
         run: |
-          # Create a new discussion in the "General" category
-          # Adjust --category if your repo uses different names
-          gh discussion create \
-            --category "General" \
+          gh issue create \
             --title "🔮 Madame Zelda's Fortune: $(date +'%A, %b %d')" \
             --body-file final_post.md
