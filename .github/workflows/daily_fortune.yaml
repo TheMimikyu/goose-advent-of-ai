@@ -3,7 +3,7 @@ name: ⛄ Daily Winter Fortune
 on:
   schedule:
     # Runs at 08:00 UTC every day
-    - cron: '0 0 * * *'
+    - cron: '0 0 * 12 *'
   workflow_dispatch: # Allows manual triggering for testing
 
 permissions:
@@ -21,7 +21,6 @@ jobs:
   forecast:
     name: Generate Winter Prophecy
     runs-on: ubuntu-latest
-    if: ${{ github.event_name == 'workflow_dispatch' ||  date +%-m == 12 }} # Logic check for December (optional)
 
     steps:
       - name: Checkout Repo
