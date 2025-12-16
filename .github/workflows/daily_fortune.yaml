@@ -29,13 +29,13 @@ jobs:
       - name: Install Goose CLI
         run: |
           mkdir -p $HOME/.local/bin
-          curl -fsSL [https://github.com/block/goose/releases/download/stable/download_cli.sh](https://github.com/block/goose/releases/download/stable/download_cli.sh) | CONFIGURE=false GOOSE_BIN_DIR=$HOME/.local/bin bash
+          # Using the clean command with CONFIGURE=false for silent install
+          curl -fsSL https://github.com/block/goose/releases/download/stable/download_cli.sh | CONFIGURE=false GOOSE_BIN_DIR=$HOME/.local/bin bash
           echo "$HOME/.local/bin" >> $GITHUB_PATH
 
       - name: Configure Goose
         run: |
           mkdir -p ~/.config/goose
-          # We manually write the config to inject the API Key from secrets
           cat <<EOF > ~/.config/goose/config.yaml
           GOOSE_PROVIDER: $GOOSE_PROVIDER
           GOOSE_MODEL: $GOOSE_MODEL
